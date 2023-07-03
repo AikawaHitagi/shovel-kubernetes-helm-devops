@@ -1,6 +1,7 @@
 #! groovy
 
 node {
+    agent {label 'cpp-slave'}
     def namespace = "test"
     def project = "shovel"
     def imageTag = new Date().format('yyyyMMddHHmm')
