@@ -1,11 +1,13 @@
 pipeline {
     agent {label 'master'}
-    def namespace = "test"
-    def project = "shovel"
-    def imageTag = new Date().format('yyyyMMddHHmm')
-    def releaseImage = "registry.cn-hangzhou.aliyuncs.com/shovel/shovel-kh:${imageTag}"
-    def packageImage = "registry.cn-hangzhou.aliyuncs.com/shovel-build/shovel-kh:${imageTag}"
-    def branch = params.BRANCH
+    environment {
+        namespace = "test"
+        project = "shovel"
+        imageTag = new Date().format('yyyyMMddHHmm')
+        releaseImage = "registry.cn-hangzhou.aliyuncs.com/shovel/shovel-kh:${imageTag}"
+        packageImage = "registry.cn-hangzhou.aliyuncs.com/shovel-build/shovel-kh:${imageTag}"
+        branch = params.BRANCH
+    }
 
     stages {
       stage('Init') {
