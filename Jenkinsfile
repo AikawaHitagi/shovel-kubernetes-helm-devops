@@ -4,8 +4,8 @@ pipeline {
         namespace = "test"
         project = "shovel"
         imageTag = new Date().format('yyyyMMddHHmm')
-        releaseImage = "testK/shovel/shovel-kh:${imageTag}"
-        packageImage = "testK/shovel-build/shovel-kh:${imageTag}"
+        releaseImage = "testk/shovel/shovel-kh:${imageTag}"
+        packageImage = "testk/shovel-build/shovel-kh:${imageTag}"
     }
 
     stages {
