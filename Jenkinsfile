@@ -6,7 +6,6 @@ pipeline {
         imageTag = new Date().format('yyyyMMddHHmm')
         releaseImage = "registry.cn-hangzhou.aliyuncs.com/shovel/shovel-kh:${imageTag}"
         packageImage = "registry.cn-hangzhou.aliyuncs.com/shovel-build/shovel-kh:${imageTag}"
-        branch = params.BRANCH
     }
 
     stages {
