@@ -1,7 +1,5 @@
-#! groovy
-
-node {
-    agent {label 'cpp-slave'}
+pipeline {
+    agent {label 'master'}
     def namespace = "test"
     def project = "shovel"
     def imageTag = new Date().format('yyyyMMddHHmm')
@@ -9,46 +7,55 @@ node {
     def packageImage = "registry.cn-hangzhou.aliyuncs.com/shovel-build/shovel-kh:${imageTag}"
     def branch = params.BRANCH
 
-    try {
-        stage('Clone target repo') {
-             checkout([$class: 'GitSCM', branches: [[name: branch]],
-             doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [],
-             userRemoteConfigs: [[credentialsId: 'deploy', url: 'https://github.com/ChinaLHR/shovel-kubernetes-helm-devops.git']]])
+    stages {
+      stage('Init') {
+      steps {
+        cleanWs()
+        checkout scm
+        dir(env.WORKSPACE) {
+          sh "pwd"
         }
-
-        stage('Build package') {
-            sh "make build-package-image package-image=${packageImage}"
-            sh "make package package-image=${packageImage}"
-        }
-
-        stage('Build release') {
-            sh "make build-release-image release-image=${releaseImage}"
-        }
-
-        stage('Push release image to registry') {
-            withDockerRegistry(credentialsId: 'docker-user', url: 'https://registry.cn-hangzhou.aliyuncs.com') {
-                sh "docker push ${releaseImage}"
-            }
-        }
-
-        stage('Deploy') {
-            sh """
-               kubectl config use-context dev
-               helm -n ${namespace} upgrade ${project} chart \
-                    -f chart/values.yaml \
-                    --set-string image.tag=${imageTag} \
-                    --wait --install
-                """
-        }
-
-    } catch (Exception e) {
-        currentBuild.result = 'FAILURE'
-    } finally {
-            sh """
-               docker image rm ${releaseImage} || true
-               docker image rm ${packageImage} || true
-            """
-            deleteDir()
-
+      }
     }
+      stage('Package') {
+        steps {
+          dir("${env.WORKSPACE}") {
+           sh """
+            echo "Package start"
+            make build-package-image package-image=${packageImage}
+            make package package-image=${packageImage}
+           """
+          }
+        }
+     }
+    stage('Release') {
+        steps {
+          dir("${env.WORKSPACE}") {
+           sh """
+            make build-release-image release-image=${releaseImage}
+           """
+          }
+        }
+     }
+
+     stage('Push release image to registry') {
+        steps {
+          dir("${env.WORKSPACE}") {
+           sh """
+            echo "docker push ${releaseImage}"
+           """
+          }
+        }
+     }
+
+      stage('Deploy') {
+        steps {
+          dir("${env.WORKSPACE}") {
+           sh """
+            echo "kubectl deploy"
+           """
+          }
+        }
+     }
+}
 }
